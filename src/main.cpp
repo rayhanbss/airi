@@ -2,18 +2,21 @@
 #include <ThreeWire.h>
 #include <RtcDS1302.h>
 
-// Define pins
+// RTC
 #define PIN_CLK 13
-#define PIN_DAT 14
-#define PIN_CE  12
+#define PIN_DAT 12
+#define PIN_RST 14
 
-ThreeWire myWire(PIN_DAT, PIN_CLK, PIN_CE);
+// SOIL
+#define PIN_SOIL 34
+
+ThreeWire myWire(PIN_DAT, PIN_CLK, PIN_RST);
 RtcDS1302<ThreeWire> rtc(myWire);
 
 void setup() {
     Serial.begin(115200);
 
-    rtc.Begin(); // ← capital B, no Wire.begin() needed for DS1302
+    rtc.Begin();
 
     RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
     RtcDateTime adjusted = RtcDateTime(
@@ -47,6 +50,10 @@ void setup() {
 void loop() {
     RtcDateTime now = rtc.GetDateTime();
 
+    int soilValue = analogRead(PIN_SOIL);
+    int soilPercent = 100 - (soilValue * 100 / 4095);
+
+
     Serial.print(now.Year(), DEC);
     Serial.print('/');
     Serial.print(now.Month(), DEC);
@@ -58,6 +65,9 @@ void loop() {
     Serial.print(now.Minute(), DEC);
     Serial.print(':');
     Serial.print(now.Second(), DEC);
+
+    Serial.print(" Soil: ");
+    Serial.println(soilPercent);
     Serial.println();
 
     delay(1000);
